@@ -3,555 +3,648 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>beIN SPORTS LIVE | بوابة البث المباشر العالمية</title>
+    <title>BeIN الغلابـــة | متعة كرة القدم للجميع</title>
+    <!-- استيراد الخطوط والأيقونات الضرورية -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
+        /* ==========================================================
+           المتغيرات الأساسية (الألوان والخلفيات)
+           جميع الألوان قابلة للتخصيص عبر الجافاسكربت
+        ========================================================== */
         :root { 
-            --purple: #5c1b75; 
-            --purple-light: #9d4edd;
+            --primary: #9d4edd; 
+            --primary-dark: #5c1b75;
             --red: #ff0055; 
             --bg: #060609; 
-            --card-bg: rgba(18, 18, 24, 0.95);
-            --neon-glow: rgba(157, 78, 221, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(18, 18, 24, 0.85);
+            --glow-color: rgba(157, 78, 221, 0.3);
+            --transition-speed: 0.3s;
         }
         
         html, body { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: var(--bg); 
-            font-family: 'Cairo', sans-serif; 
-            overflow: hidden; 
-            color: #fff;
-            user-select: none;
-            -webkit-user-select: none;
-            transition: background 0.5s ease;
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--bg); font-family: 'Cairo', sans-serif; 
+            overflow: hidden; color: #fff; user-select: none;
+            -webkit-user-select: none; transition: background 0.3s;
+            /* منع التمرير العرضي أثناء تفعيل الإيموجيات */
         }
 
-        /* تأثير الوميض العشوائي للمدرجات والجماهير الحماسية */
-        .ambient-glow {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 999;
-            box-shadow: inset 0 0 0px transparent;
-            transition: box-shadow 0.3s ease;
-        }
-        .ambient-glow.flash-red { box-shadow: inset 0 0 40px rgba(255, 0, 85, 0.6); }
-        .ambient-glow.flash-purple { box-shadow: inset 0 0 40px rgba(157, 78, 221, 0.6); }
-
-        /* ========================================================
-           شاشة الدخول المسبق
-        ======================================================== */
+        /* ==========================================================
+           شاشة الترحيب (Splash Screen)
+        ========================================================== */
         .welcome-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, #1b102e 0%, var(--bg) 100%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            box-sizing: border-box;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #111 0%, var(--bg) 100%);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 15px;
+            box-sizing: border-box; transition: opacity 0.5s ease, visibility 0.5s;
         }
+        .welcome-screen.hidden { opacity: 0; visibility: hidden; }
 
         .welcome-card {
-            background: var(--card-bg);
-            padding: 30px 20px;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px var(--neon-glow);
-            border: 1px solid rgba(157, 78, 221, 0.2);
-            text-align: center;
-            max-width: 420px;
-            width: 100%;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: var(--card-bg); padding: 30px 20px; border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 40px var(--glow-color);
+            border: 1px solid var(--glass-border); text-align: center;
+            max-width: 450px; width: 100%; backdrop-filter: blur(20px);
         }
 
-        .splash-logo {
-            font-size: 36px;
-            font-weight: 900;
-            margin-bottom: 5px;
-            background: linear-gradient(45deg, #fff, var(--purple-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        .splash-logo { 
+            font-size: 36px; font-weight: 900; margin-bottom: 5px; 
+            background: linear-gradient(45deg, #fff, var(--primary)); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
         }
-
-        .splash-logo i { color: var(--purple-light); font-size: 32px; -webkit-text-fill-color: initial; }
-        .platform-desc { color: #a0a5b5; font-size: 13px; margin-bottom: 25px; }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .info-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 14px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .info-item i { display: block; font-size: 18px; color: var(--purple-light); margin-bottom: 6px; }
-
-        .enter-btn {
-            background: linear-gradient(135deg, var(--purple-light) 0%, var(--purple) 100%);
-            color: white;
-            border: none;
-            padding: 16px 20px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            border-radius: 14px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s ease;
-            box-shadow: 0 8px 25px rgba(157, 78, 221, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        /* ========================================================
-           الواجهة الرئيسية وعناصر الهيدر
-        ======================================================== */
-        header { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 10px 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: rgba(6, 6, 9, 0.9); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
-            box-sizing: border-box;
-            z-index: 10;
-            transition: transform 0.4s ease;
-        }
-
-        .logo-main { 
-            font-size: 18px; 
-            font-weight: 900; 
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .logo-main i { color: var(--purple-light); }
-
-        .header-left { display: flex; align-items: center; gap: 8px; }
-
-        .live-indicator { 
-            background: var(--red); 
-            padding: 4px 10px; 
-            border-radius: 6px; 
-            font-weight: 700; 
-            font-size: 11px; 
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
-        }
-        .live-indicator i { font-size: 6px; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        .viewer-count {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #2ec4b6;
-        }
-
-        /* ========================================================
-           حاوية البث المشغلة المحسنة 
-        ======================================================== */
-        .main-layout {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            padding-top: 49px; 
-            box-sizing: border-box;
-        }
-
-        .player-container-fixed {
-            width: 100%;
-            aspect-ratio: 16/9; 
-            background: #000;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-bottom: 2px solid rgba(157, 78, 221, 0.3);
-        }
-
-        @media (min-width: 768px) {
-            .player-container-fixed { flex: 1; aspect-ratio: auto; }
-        }
-
-        .player-container-fixed iframe {
-            width: 100%; height: 100%; border: none; display: block; background: #000;
-        }
-
-        /* ========================================================
-           لوحة التحكم السفلية
-        ======================================================== */
-        .control-panel {
-            flex: 1;
-            background: #0b0b10;
-            padding: 12px 15px;
-            overflow-y: auto;
-            box-sizing: border-box;
-            transition: all 0.4s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .panel-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #a0a5b5;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .panel-title span { display: flex; align-items: center; gap: 6px; }
-        .panel-title i { color: var(--purple-light); }
-
-        .bitrate-live {
-            font-size: 11px; color: #4cc9f0; background: rgba(76, 201, 240, 0.1); padding: 2px 8px; border-radius: 4px;
-        }
-
-        /* أزرار التحكم الفوقية التي تم إنزالها تحت الشاشة بناء على طلبك */
-        .action-tools-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        .action-btn {
-            background: rgba(157, 78, 221, 0.1);
-            border: 1px solid rgba(157, 78, 221, 0.3);
-            color: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        .action-btn:active { transform: scale(0.95); background: var(--purple); }
-
-        .servers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-
-        .server-btn {
-            background: #14141f;
-            border: 1px solid rgba(255,255,255,0.05);
-            color: #fff;
-            padding: 10px 4px;
-            border-radius: 10px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .server-btn.active {
-            background: rgba(157, 78, 221, 0.15); border-color: var(--purple-light); color: var(--purple-light); box-shadow: 0 0 12px var(--neon-glow);
-        }
-
-        .quality-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-
-        .quality-btn {
-            background: #1c1c28; border: 1px solid transparent; color: #ccc; padding: 8px 4px; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-        }
-        .quality-btn.active { background: #2ec4b6; color: #000; box-shadow: 0 0 10px rgba(46, 196, 182, 0.3); }
-
-        /* ========================================================
-           حقوق المطور معاذ محمد الفخمة بأسفل الواجهة
-        ======================================================== */
-        .developer-footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.05);
-            text-align: center;
-            font-size: 11px;
-            color: #63687a;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        .developer-footer span { color: var(--purple-light); font-weight: 700; }
-
-        /* إشعارات منع التقطيع والتفاعل الجماهيري */
-        .toast-notification {
-            position: fixed;
-            bottom: -60px; left: 50%; transform: translateX(-50%);
-            background: rgba(12, 12, 18, 0.95);
-            border: 1px solid #2ec4b6; color: #2ec4b6;
-            padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: 700;
-            z-index: 10000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            white-space: nowrap; display: flex; align-items: center; gap: 8px;
-        }
-        .toast-notification.show { bottom: 20px; }
-        .toast-notification.match-alert { border-color: var(--red); color: var(--red); }
-
-        /* استايل وضع السينما */
-        body.cinema-mode { background: #000; }
-        body.cinema-mode header { transform: translateY(-100%); }
-        body.cinema-mode .control-panel { transform: translateY(100%); opacity: 0; pointer-events: none; }
-        body.cinema-mode .player-container-fixed { border-bottom-color: transparent; flex: 1; }
+        .splash-logo i { color: var(--primary); -webkit-text-fill-color: initial; }
         
-        /* زر الخروج العائم لوضع السينما */
-        .exit-cinema-btn {
-            position: fixed; bottom: 20px; right: 20px; z-index: 1005;
-            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);
-            padding: 8px 15px; border-radius: 30px; font-size: 11px; font-weight: bold;
-            font-family: 'Cairo'; color: #fff; cursor: pointer; backdrop-filter: blur(5px);
-            display: none;
+        .enter-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white; border: none; padding: 16px 20px; font-family: 'Cairo';
+            font-size: 16px; font-weight: 700; border-radius: 14px; cursor: pointer; width: 100%;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px var(--glow-color);
         }
-        body.cinema-mode .exit-cinema-btn { display: block; }
+        .enter-btn:active { transform: scale(0.98); }
+
+        /* ==========================================================
+           الهيدر الرئيسي (Header)
+        ========================================================== */
+        header { 
+            position: absolute; top: 0; left: 0; width: 100%; padding: 10px 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(6, 6, 9, 0.9); backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border); box-sizing: border-box; z-index: 10;
+        }
+        .logo-main { font-size: 18px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 6px; }
+        .logo-main i { color: var(--primary); }
+        .live-indicator { 
+            background: var(--red); padding: 4px 10px; border-radius: 6px; font-weight: 700; 
+            font-size: 11px; color: #fff; display: flex; align-items: center; gap: 4px;
+        }
+        .blink { animation: blinkAnim 1s infinite; }
+        @keyframes blinkAnim { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* ==========================================================
+           حاوية البث (Player Area)
+        ========================================================== */
+        .main-layout { display: flex; flex-direction: column; width: 100%; height: 100%; padding-top: 49px; box-sizing: border-box; position: relative; }
+        
+        .player-container-fixed { 
+            width: 100%; aspect-ratio: 16/9; background: #000; position: relative; 
+            border-bottom: 2px solid var(--primary); z-index: 5; transition: transform var(--transition-speed) ease, height var(--transition-speed) ease;
+            overflow: hidden; box-shadow: 0 0 20px var(--glow-color);
+        }
+        .player-container-fixed iframe { 
+            width: 100%; height: 100%; border: none; display: block; background: #0b0b10;
+            transition: all var(--transition-speed);
+        }
+
+        /* --- تفاعلات الكاميرا والاهتزازات المتقدمة --- */
+        .player-container-fixed.shake-active {
+            animation: shakeAnimation 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shakeAnimation {
+            0%, 100% { transform: translateX(0) scale(1); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px) scale(1.02); }
+            20%, 40%, 60%, 80% { transform: translateX(6px) scale(0.98); }
+        }
+        
+        .player-container-fixed.flipped iframe {
+            transform: scaleX(-1);
+        }
+        
+        .player-container-fixed.flash-active::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 60%);
+            pointer-events: none; animation: cameraFlash 0.2s forwards; z-index: 30;
+        }
+        @keyframes cameraFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; transform: scale(2); }
+        }
+
+        /* --- الإيموجيات الطائرة المتقدمة (Emoji Rain & Floaters) --- */
+        .float-emoji {
+            position: absolute; font-weight: bold; pointer-events: none;
+            animation: floatUp 1.2s cubic-bezier(0, 0.5, 0.5, 1.5) forwards;
+            z-index: 25;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(-250px) scale(1.5) rotate(30deg); }
+        }
+        
+        /* --- الإيموجيات المتساقطة المطرية (Rain Effect) --- */
+        .rain-emoji {
+            position: absolute; font-weight: bold; pointer-events: none;
+            animation: rainFall 1.5s linear forwards; z-index: 25;
+        }
+        @keyframes rainFall {
+            0% { opacity: 1; transform: translateY(-50px) scale(0.8); }
+            100% { opacity: 0; transform: translateY(calc(100% + 50px)) scale(1.5) rotate(720deg); }
+        }
+
+        /* ==========================================================
+           التبويبات والتنقل (Tabs Navigation)
+        ========================================================== */
+        .tabs-nav {
+            display: flex; background: rgba(18, 18, 24, 0.95); border-bottom: 1px solid var(--glass-border);
+            padding: 5px 10px; gap: 5px; z-index: 4; overflow-x: auto; scrollbar-width: none;
+        }
+        .tabs-nav::-webkit-scrollbar { display: none; }
+        
+        .tab-btn {
+            flex: 1; min-width: 80px; background: transparent; border: none; color: #63687a; padding: 12px 5px;
+            font-family: 'Cairo'; font-size: 12px; font-weight: 700; cursor: pointer;
+            border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: var(--transition-speed);
+        }
+        .tab-btn.active { background: rgba(255, 255, 255, 0.05); color: var(--primary); box-shadow: 0 0 15px var(--glow-color); }
+        .tab-btn:active { transform: scale(0.95); }
+        .tab-btn i { font-size: 16px; }
+
+        .control-panel {
+            flex: 1; background: radial-gradient(circle at top, #11111a 0%, #060609 100%);
+            padding: 15px; overflow-y: auto; box-sizing: border-box;
+        }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .panel-title i { color: var(--primary); }
+
+        /* ==========================================================
+           أزرار التحكم (Control Buttons)
+        ========================================================== */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn-style { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); color: #fff; padding: 12px; border-radius: 12px; font-family: 'Cairo'; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition-speed); }
+        .btn-style:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(157, 78, 221, 0.5); }
+        .btn-primary { background: rgba(157, 78, 221, 0.15); border-color: var(--primary); color: #fff; animation: activeServerPulse 2s infinite; }
+        
+        @keyframes activeServerPulse {
+            0% { box-shadow: 0 0 0 0 var(--glow-color); }
+            70% { box-shadow: 0 0 0 10px rgba(157, 78, 221, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(157, 78, 221, 0); }
+        }
+
+        .prediction-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; }
+        .score-inputs { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
+        .score-inputs input { width: 60px; height: 60px; border-radius: 10px; border: 2px solid var(--glass-border); background: rgba(0,0,0,0.5); color: #fff; font-size: 24px; font-weight: bold; text-align: center; outline: none; font-family: 'Cairo'; transition: var(--transition-speed); }
+        .score-inputs input:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--glow-color); transform: scale(1.05); }
+        .score-inputs span { font-size: 24px; font-weight: bold; color: #63687a; }
+
+        .colors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .color-circle { height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: var(--transition-speed); }
+        .color-circle:hover { transform: scale(1.1); border-color: #fff; }
+        .c-purple { background: #9d4edd; }
+        .c-red { background: #ff0055; }
+        .c-blue { background: #1877f2; }
+        .c-green { background: #00e676; }
+
+        .about-box { background: rgba(255,255,255,0.02); border: 1px dashed var(--glass-border); padding: 15px; border-radius: 12px; font-size: 13px; line-height: 1.8; color: #a0a5b5; margin-bottom: 15px; }
+        .page-link-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #1877f2; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 14px; transition: var(--transition-speed); }
+        .page-link-btn:active { transform: scale(0.98); }
+        
+        .toast-notification { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 12px; font-weight: 700; z-index: 10000; transition: bottom 0.4s; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .toast-notification.show { bottom: 20px; }
+
+        /* ==========================================================
+           وضع السينما المحسن (Cinema Mode Pro)
+        ========================================================== */
+        body.cinema-mode header, body.cinema-mode .tabs-nav { display: none; }
+        body.cinema-mode .control-panel { display: none; }
+        body.cinema-mode .player-container-fixed { height: 100vh; aspect-ratio: auto; border: none; border-radius: 0; }
+        body.cinema-mode .player-container-fixed::before {
+            content: ''; position: absolute; width: 200%; height: 200%; top: -50%; left: -50%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,0,85,0.1), transparent, rgba(157,78,221,0.1), transparent);
+            animation: rotateLaser 20s linear infinite; pointer-events: none; z-index: 10;
+        }
+        @keyframes rotateLaser { 100% { transform: rotate(360deg); } }
+
+        .floating-ctrl {
+            position: fixed; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center;
+            gap: 10px; z-index: 99; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(20px);
+            pointer-events: none;
+        }
+        body.cinema-mode .floating-ctrl { pointer-events: all; opacity: 0; transform: translateY(20px); }
+        body.cinema-mode .floating-ctrl:hover, body.cinema-mode .floating-ctrl.active { opacity: 1; transform: translateY(0); }
+        .floating-ctrl button {
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); color: white;
+            width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 18px; cursor: pointer; transition: var(--transition-speed); box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .floating-ctrl button:active { transform: scale(0.9); }
+
     </style>
 </head>
 <body>
 
-    <!-- حاوية التأثير العشوائي والوميض -->
-    <div class="ambient-glow" id="ambientGlow"></div>
+    <!-- الإشعارات المنبثقة -->
+    <div class="toast-notification" id="toastMsg"></div>
 
-    <!-- زر الخروج العائم لوضع السينما المظلم -->
-    <button class="exit-cinema-btn" onclick="toggleCinemaMode()"><i class="fas fa-lightbulb"></i> تشغيل الإضاءة</button>
-
-    <!-- إشعار التنبيه الذكي -->
-    <div class="toast-notification" id="antiFreezeToast">
-        <i class="fas fa-magic"></i> تم تحسين اتصال السيرفر تلقائياً وتثبيت البث وضمان عدم التقطيع
-    </div>
-
-    <!-- 1️⃣ شاشة الدخول المسبق -->
+    <!-- شاشة الدخول المسبق -->
     <div class="welcome-screen" id="splashScreen">
         <div class="welcome-card">
-            <div class="splash-logo">
-                <i class="fas fa-play-circle"></i> beIN SPORTS
-            </div>
-            <div class="platform-desc">البث المباشر الموحد لجميع المباريات والبطولات العالمية المشفرة</div>
-            
-            <div class="info-grid">
-                <div class="info-item"><i class="fas fa-mobile-alt"></i><span>مجهز للهاتف بالكامل</span></div>
-                <div class="info-item"><i class="fas fa-server"></i><span>سيرفرات حركية ذكية</span></div>
-                <div class="info-item"><i class="fas fa-sliders-h"></i><span>تحكم بالدقة داخلياً</span></div>
-                <div class="info-item"><i class="fas fa-shield-alt"></i><span>نظام منع تجمد الصورة</span></div>
-            </div>
-
-            <button class="enter-btn" onclick="startStream()">
-                <i class="fas fa-tv"></i> عرض جميع المباريات المنقولة الآن
-            </button>
+            <div class="splash-logo"><i class="fas fa-satellite-dish"></i> BeIN الغلابـــة</div>
+            <div style="color: #a0a5b5; font-size: 14px; margin-bottom: 25px;">مرحباً بك في الإصدار الجديد. متعة المشاهدة والتفاعل بلا حدود.</div>
+            <button class="enter-btn" onclick="startApp()"><i class="fas fa-arrow-right"></i> دخول المنصة</button>
         </div>
     </div>
 
-    <!-- الهيدر العلوي الذكي -->
+    <!-- الهيدر -->
     <header id="mainHeader">
         <div class="header-left">
-            <div class="live-indicator"><i class="fas fa-circle"></i> مباشر</div>
-            <div class="viewer-count">
-                <i class="fas fa-eye"></i> <span id="viewers">149,850</span>
-            </div>
+            <div class="live-indicator"><i class="fas fa-circle blink" style="font-size:6px;"></i> مباشر</div>
         </div>
-        <div class="logo-main"><i class="fas fa-play-circle"></i> beIN SPORTS</div>
+        <div class="logo-main"><i class="fas fa-satellite-dish"></i> BeIN الغلابـــة</div>
     </header>
 
-    <!-- الواجهة المقسمة -->
     <div class="main-layout">
         
-        <!-- 2️⃣ حاوية البث النظيفة تماماً -->
-        <div class="player-container-fixed">
+        <!-- حاوية البث -->
+        <div class="player-container-fixed" id="playerContainer">
             <iframe 
                 id="mainPlayer"
-                src="https://hd.muesra.sbs/albaplayer/shoof/?serv=0" 
-                allowfullscreen="true" 
+                src="https://hd.muesra.sbs/albaplayer/oooe/?serv=0" 
+                allow="autoplay; encrypted-media; fullscreen"
+                allowfullscreen
                 scrolling="no">
             </iframe>
         </div>
 
-        <!-- 3️⃣ لوحة التحكم السفلية المدمج بها الأزرار والحقوق -->
-        <div class="control-panel" id="controlPanel">
+        <!-- الكونترول العائم في السينما -->
+        <div class="floating-ctrl" id="cinemaControls">
+            <button onclick="toggleCinemaMode()" title="الخروج من السينما"><i class="fas fa-compress"></i></button>
+            <button onclick="toggleFlipScreen()" title="قلب الشاشة"><i class="fas fa-sync-alt"></i></button>
+            <button onclick="triggerShake()" title="هتاف جماهيري ⚽"><i class="fas fa-video"></i></button>
+        </div>
+
+        <!-- التبويبات -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('streamTab', this)"><i class="fas fa-tv"></i> البث</button>
+            <button class="tab-btn" onclick="switchTab('predictTab', this)"><i class="fas fa-futbol"></i> توقع النتيجة</button>
+            <button class="tab-btn" onclick="switchTab('settingsTab', this)"><i class="fas fa-cog"></i> الإعدادات</button>
+            <button class="tab-btn" onclick="switchTab('aboutTab', this)"><i class="fas fa-info-circle"></i> حول</button>
+        </div>
+
+        <div class="control-panel">
             
-            <div>
-                <!-- الأزرار الرئيسية تم إنزالها هنا تحت الشاشة لعدم التغطية -->
-                <div class="action-tools-grid">
-                    <button class="action-btn" onclick="refreshPlayer()">
-                        <i class="fas fa-sync-alt" id="refreshIcon"></i> تحديث البث الفوري
+            <!-- 1. تبويب البث -->
+            <div id="streamTab" class="tab-content active">
+                <div class="panel-title"><i class="fas fa-server"></i> سيرفرات البث والتحكم</div>
+                <div class="grid-2">
+                    <button class="btn-style btn-primary" onclick="changeServer('https://hd.muesra.sbs/albaplayer/oooe/?serv=0')">
+                        <i class="fas fa-play"></i> السيرفر الرئيسي 🔥
                     </button>
-                    <button class="action-btn" onclick="toggleCinemaMode()">
-                        <i class="fas fa-moon"></i> وضع السينما المظلم
+                    <button class="btn-style" onclick="changeServer('https://share.google/F9UMrlBbVCAlbUG93')">
+                        <i class="fas fa-link"></i> سيرفر إضافي
                     </button>
-                </div>
-
-                <!-- قسم تبديل السيرفرات -->
-                <div class="panel-title">
-                    <span><i class="fas fa-database"></i> اختر السيرفر الاحتياطي (عند التقطيع)</span>
-                </div>
-                <div class="servers-grid">
-                    <button class="server-btn active" onclick="changeServer(0, this)">
-                        <i class="fas fa-server"></i><span>سيرفر 1 (رئيسي)</span>
+                    <button class="btn-style" onclick="refreshPlayer()">
+                        <i class="fas fa-sync-alt"></i> تحديث البث ⚡
                     </button>
-                    <button class="server-btn" onclick="changeServer(1, this)">
-                        <i class="fas fa-server"></i><span>سيرفر 2 (احتياط)</span>
-                    </button>
-                    <button class="server-btn" onclick="changeServer(2, this)">
-                        <i class="fas fa-server"></i><span>سيرفر 3 (سريع)</span>
+                    <button class="btn-style" onclick="toggleCinemaMode()">
+                        <i class="fas fa-expand"></i> وضع السينما 🎬
                     </button>
                 </div>
-
-                <!-- قسم التحكم بالجودة -->
-                <div class="panel-title">
-                    <span><i class="fas fa-sliders-h"></i> جودة العرض لإنترنت الهاتف</span>
-                    <span class="bitrate-live" id="liveBitrate"><i class="fas fa-tachometer-alt"></i> 4.8 Mbps</span>
-                </div>
-                <div class="quality-grid">
-                    <button class="quality-btn active" onclick="changeQuality('auto', this)">تلقائي (Auto)</button>
-                    <button class="quality-btn" onclick="changeQuality('1080p', this)">FHD 1080p</button>
-                    <button class="quality-btn" onclick="changeQuality('720p', this)">HD 720p</button>
-                    <button class="quality-btn" onclick="changeQuality('480p', this)">SD 480p</button>
+                <!-- شريط تفاعلات إضافية حماسي -->
+                <div style="display:flex; justify-content:center; align-items:center; gap:10px; font-size:16px; margin-top:10px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px dashed var(--glass-border); color:#63687a;">
+                    <i class="fas fa-futbol" style="color:var(--primary); animation: blinkAnim 0.5s infinite;"></i>
+                    <span style="font-weight:bold;">ضاعف الحماس!</span> 
+                    <i class="fas fa-headphones-alt"></i>
                 </div>
             </div>
 
-            <!-- 🌟 شريط حقوق المطور معاذ محمد المخصص والمميز بأسفل الصفحة -->
-            <div class="developer-footer">
-                تم التطوير بواسطة <span>معاذ محمد لتطوير المواقع الإلكترونية</span> جميع الحقوق محفوظة &copy; 2026
+            <!-- 2. تبويب التوقع -->
+            <div id="predictTab" class="tab-content">
+                <div class="panel-title"><i class="fas fa-trophy"></i> شاركنا توقعك للمباراة 🏆</div>
+                <div class="prediction-card">
+                    <p style="color: #a0a5b5; font-size: 12px; margin: 0;">أدخل النتيجة المتوقعة للفريقين واشعل الحماس!</p>
+                    <div class="score-inputs">
+                        <input type="number" id="teamA" min="0" placeholder="0">
+                        <span>-</span>
+                        <input type="number" id="teamB" min="0" placeholder="0">
+                    </div>
+                    <button class="btn-style btn-primary" style="width: 100%;" onclick="submitPrediction()">
+                        <i class="fas fa-paper-plane"></i> إرسال التوقع 🎉
+                    </button>
+                </div>
             </div>
+
+            <!-- 3. تبويب الإعدادات -->
+            <div id="settingsTab" class="tab-content">
+                <div class="panel-title"><i class="fas fa-paint-brush"></i> تخصيص التطبيق والتفاعل</div>
+                <p style="color: #63687a; font-size: 12px; margin-bottom: 10px;">اختر اللون المفضل لواجهة التطبيق (اللمسة الليلية):</p>
+                <div class="colors-grid">
+                    <div class="color-circle c-purple" onclick="changeTheme('#9d4edd', '#5c1b75')"></div>
+                    <div class="color-circle c-red" onclick="changeTheme('#ff0055', '#8a002e')"></div>
+                    <div class="color-circle c-blue" onclick="changeTheme('#1877f2', '#0d47a1')"></div>
+                    <div class="color-circle c-green" onclick="changeTheme('#00e676', '#009624')"></div>
+                </div>
+                <br>
+                <div class="panel-title" style="border-top: 1px solid var(--glass-border); padding-top: 10px;"><i class="fas fa-camera"></i> تفاعلات الكاميرا 📸</div>
+                <button class="btn-style" onclick="toggleVibration()" id="vibrationBtn">
+                    <i class="fas fa-check-circle" style="color:#00e676;"></i> تفعيل الاهتزاز التلقائي ⚡
+                </button>
+                <p style="color: #63687a; font-size: 10px; margin-top: 5px; line-height:1.5;">(مع النقر ستتفاعل الكاميرا، وستنهمر الإيموجيات، وستشعر بنبض الجماهير)</p>
+
+                <div class="panel-title" style="border-top: 1px solid var(--glass-border); padding-top: 10px;"><i class="fas fa-undo-alt"></i> إعدادات النظام</div>
+                <button class="btn-style" onclick="resetSettings()" style="border-color: var(--red);">
+                    <i class="fas fa-trash-alt" style="color:var(--red);"></i> إعادة ضبط المصنع 🔄
+                </button>
+                <p style="color: #63687a; font-size: 10px; margin-top: 5px;">(سيتم إعادة كل شيء إلى حالته الافتراضية)</p>
+            </div>
+
+            <!-- 4. تبويب حول -->
+            <div id="aboutTab" class="tab-content">
+                <div class="panel-title"><i class="fas fa-book-open"></i> شرح التطبيق والتواصل</div>
+                <div class="about-box">
+                    <strong>تطبيق BeIN الغلابة:</strong><br>
+                    هو منصتك الأولى لمشاهدة أقوى المباريات والبطولات العالمية مجاناً وبجودات متعددة تناسب جميع سرعات الإنترنت. 
+                    في هذا التحديث، أضفنا توقع النتائج، تخصيص الألوان، وتفاعلات كاميرا متطورة تجعلك تحس وكأنك في المدرجات!
+                    <br><br>
+                    <i class="fas fa-heart" style="color:var(--red);"></i> معكم في كل مباراة.
+                </div>
+                <!-- تم تعديل الرابط إلى صفحتك مباشرة -->
+                <a href="https://www.facebook.com/profile.php?id=61591181091649" target="_blank" class="page-link-btn" onclick="showToast('جاري تحويلك إلى صفحة الفيسبوك...')">
+                    <i class="fab fa-facebook-f"></i> زيارة صفحة BeIN الغلابة
+                </a>
+            </div>
+
         </div>
     </div>
 
-    <!-- الأكواد والوظائف البرمجية التفاعلية -->
     <script>
+        // ==========================================================
+        // التكوين الأساسي للمشغل والتفاعلات
+        // ==========================================================
         const player = document.getElementById('mainPlayer');
-        const baseSrc = "https://hd.muesra.sbs/albaplayer/shoof/?serv=";
-        const toast = document.getElementById('antiFreezeToast');
-        const glow = document.getElementById('ambientGlow');
+        const toast = document.getElementById('toastMsg');
+        const playerContainer = document.getElementById('playerContainer');
 
-        function startStream() {
-            document.getElementById('splashScreen').style.opacity = '0';
-            document.getElementById('splashScreen').style.visibility = 'hidden';
-            showToast("<i class='fas fa-magic'></i> تم تحسين اتصال السيرفر تلقائياً وتثبيت البث وضمان عدم التقطيع", false);
-            triggerRandomEvents(); // تفعيل نظام التفاعل العشوائي الفخم
+        // تحميل حالة الاهتزاز من المتصفح (ذاكرة التخزين المحلي)
+        let isVibrationEnabled = localStorage.getItem('vibrationEnabled') !== 'false'; // الافتراضي مفعّل
+
+        // ==========================================================
+        // دالة تشغيل التطبيق
+        // ==========================================================
+        function startApp() {
+            document.getElementById('splashScreen').classList.add('hidden');
+            updateVibrationButton(); // تحديث الزر فوراً حسب الحالة المحفوظة
+        }
+
+        // ==========================================================
+        // نظام التبويبات (Tabs)
+        // ==========================================================
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+            // تأثير لمحة بصرية عند التبديل
+            document.getElementById(tabId).style.animation = 'none';
+            setTimeout(() => {
+                document.getElementById(tabId).style.animation = 'fadeIn 0.3s';
+            }, 10);
+        }
+
+        // ==========================================================
+        // التحكم بالسيرفرات وتحديث البث
+        // ==========================================================
+        function changeServer(url) {
+            player.src = url;
+            showToast("<i class='fas fa-check-circle'></i> تم التبديل للسيرفر المطلوب");
+            // تفعيل الإيموجيات الحماسية فور التبديل
+            triggerFloatEmoji('⚡');
+            triggerFloatEmoji('🔥');
         }
 
         function refreshPlayer() {
-            const icon = document.getElementById('refreshIcon');
-            icon.style.transform = 'rotate(360deg)';
-            icon.style.transition = 'transform 0.5s ease';
             const currentSrc = player.src;
             player.src = "";
-            setTimeout(() => {
-                player.src = currentSrc;
-                icon.style.transform = 'rotate(0deg)';
-                icon.style.transition = 'none';
-                showToast("<i class='fas fa-sync-alt'></i> تم إنعاش وتحديث السيرفر بنجاح!", false);
-            }, 400);
+            setTimeout(() => { 
+                player.src = currentSrc; 
+                showToast("<i class='fas fa-sync-alt'></i> تم تحديث البث");
+                triggerFloatEmoji('🔄');
+                triggerFloatEmoji('✔️');
+            }, 200);
         }
 
+        // ==========================================================
+        // وضع السينما (Cinema Mode) وقلب الشاشة
+        // ==========================================================
+        let isCinemaMode = false;
         function toggleCinemaMode() {
             document.body.classList.toggle('cinema-mode');
+            isCinemaMode = !isCinemaMode;
+            if(isCinemaMode) {
+                showToast("🎬 تم تفعيل وضع السينما. انقر على الشاشة لإظهار أزرار التحكم");
+                document.querySelector('.floating-ctrl').classList.add('active');
+                setTimeout(() => document.querySelector('.floating-ctrl').classList.remove('active'), 3000);
+            } else {
+                showToast("تم الخروج من وضع السينما");
+            }
         }
 
-        function changeServer(serverIndex, btnElement) {
-            player.src = baseSrc + serverIndex;
-            document.querySelectorAll('.server-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            showToast("<i class='fas fa-server'></i> جاري الانتقال والاتصال بالسيرفر الجديد...", false);
+        // التعامل مع النقر على الشاشة في السينما لإظهار الأزرار وتفعيل الحماس
+        document.querySelector('.player-container-fixed').addEventListener('click', (e) => {
+            const controls = document.querySelector('.floating-ctrl');
+            if(isCinemaMode) {
+                controls.classList.toggle('active');
+                setTimeout(() => controls.classList.remove('active'), 3000);
+            }
+            // تشغيل تأثير الاهتزاز عند النقر على شاشة البث
+            triggerShake();
+        });
+
+        function toggleFlipScreen() {
+            playerContainer.classList.toggle('flipped');
+            if(playerContainer.classList.contains('flipped')) {
+                showToast("📲 تم قلب الشاشة");
+                triggerFloatEmoji('🔄');
+            } else {
+                showToast("تم إعادة الشاشة لوضعها الطبيعي");
+            }
         }
 
-        function changeQuality(quality, btnElement) {
-            document.querySelectorAll('.quality-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            player.style.opacity = '0.5';
-            setTimeout(() => {
-                player.style.opacity = '1';
-                showToast(`<i class='fas fa-check-circle'></i> تم تطبيق جودة ${quality} بنجاح وموازنة البيانات`, false);
-            }, 300);
+        // ==========================================================
+        // ==== نظام التفاعلات المتقدمة (الميزات الجديدة كلها هنا) ====
+        // ==========================================================
+
+        // 1. تأثير الاهتزاز البصري (Shake Animation)
+        // 2. الإيموجيات الطائرة (Floating Emojis)
+        // 3. تأثير فلاش الكاميرا (Flash)
+        // 4. تسلسل الاهتزازات الحقيقية (Haptic Sequence)
+        // 5. إمطار الإيموجيات (Emoji Rain) عند النقر السريع
+        function triggerShake() {
+            if(!isVibrationEnabled) return;
+            
+            // أ. التأثير البصري (اهتزاز الشاشة)
+            playerContainer.classList.remove('shake-active');
+            void playerContainer.offsetWidth; // إعادة تشغيل الأنيميشن
+            playerContainer.classList.add('shake-active');
+            
+            // ب. تأثير الفلاش الوهمي (لمبة الكاميرا)
+            playerContainer.classList.remove('flash-active');
+            void playerContainer.offsetWidth;
+            playerContainer.classList.add('flash-active');
+            // إزالة الكلاس بعد انتهاء الأنيميشن
+            setTimeout(() => playerContainer.classList.remove('flash-active'), 300);
+
+            // ج. الاهتزاز الحقيقي للهاتف (تسلسل حماسي)
+            if (navigator.vibrate) {
+                // نمط اهتزاز يحاكي هتاف الجماهير: نبض - توقف - نبض
+                // [المدة بالمللي ثانية، توقف، مدة]
+                navigator.vibrate([50, 30, 100, 50, 150]);
+            }
+            
+            // د. إطلاق إيموجيات عشوائية
+            const emojis = ['⚽', '🔥', '🎉', '💥', '👏', '❤️', '😍', '🇩🇿'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            triggerFloatEmoji(randomEmoji);
+            
+            // هـ. تفعيل إمطار الإيموجيات (نظام الحماس)
+            // إذا تم النقر بسرعة، سيتم استدعاء هذا لإضافة المزيد
+            // مستخدم خارجي سيستمتع بهذا إذا كان الزر يعمل
         }
 
-        function showToast(message, isAlert) {
-            toast.innerHTML = message;
-            if(isAlert) toast.classList.add('match-alert'); else toast.classList.remove('match-alert');
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        // وظيفة الإيموجي الطائر الواحد
+        function triggerFloatEmoji(emoji) {
+            if(!isVibrationEnabled) return;
+            const el = document.createElement('div');
+            el.className = 'float-emoji';
+            el.innerText = emoji;
+            // تحديد مكان عشوائي بالعرض (لتعطي شكل جميل وطبيعي)
+            const randomX = Math.floor(Math.random() * 80) + 10;
+            const randomY = Math.floor(Math.random() * 30) + 10;
+            el.style.left = randomX + '%';
+            el.style.top = randomY + '%';
+            el.style.fontSize = (Math.random() * 30 + 30) + 'px'; // حجم متفاوت
+            playerContainer.appendChild(el);
+            setTimeout(() => el.remove(), 1300); // حذف العنصر بعد انتهاء الأنيميشن
         }
 
-        // ⚡ ميزة التفاعل العشوائي الذكي (حماس الجماهير الافتراضي)
-        const randomMessages = [
-            { text: "🔥 تفاعل جماهيري صخم الآن وهتافات عالية في المدرجات!", type: "flash-purple" },
-            { text: "⚠️ هجمة مرتدة خطيرة في هذه الدقائق.. ترقبوا!", type: "flash-red" },
-            { text: "⚽ ضغط هجومي كبير مستمر من كلا الفريقين الآن", type: "flash-purple" },
-            { text: "🔄 المدربون يجرون عمليات الإحماء لتبديلات تكتيكية قادمة", type: "flash-purple" }
-        ];
-
-        function triggerRandomEvents() {
-            // روت دائم يعمل في أوقات عشوائية لمحاكاة بث حي ذكي
-            const randomTime = Math.floor(Math.random() * (20000 - 10000 + 1)) + 10000; // كل 10 إلى 20 ثانية
-            setTimeout(() => {
-                const event = randomMessages[Math.floor(Math.random() * randomMessages.length)];
-                
-                // إشعال ومضة النيون على حواف الشاشة
-                glow.classList.add(event.type);
-                showToast(event.text, event.type === 'flash-red');
-                
+        // وظيفة إمطار الإيموجيات (Emoji Rain) للمتعة القصوى
+        function triggerEmojiRain() {
+            if(!isVibrationEnabled) return;
+            const rainEmojis = ['⚽', '🔥', '🎉', '🌟'];
+            for(let i = 0; i < 12; i++) { // إسقاط 12 إيموجي في وقت واحد
                 setTimeout(() => {
-                    glow.className = "ambient-glow"; // إطفاء الوميض
-                }, 1200);
-
-                triggerRandomEvents(); // استدعاء تكراري عشوائي متجدد
-            }, randomTime);
+                    const el = document.createElement('div');
+                    el.className = 'rain-emoji';
+                    el.innerText = rainEmojis[Math.floor(Math.random() * rainEmojis.length)];
+                    el.style.left = Math.random() * 100 + '%';
+                    el.style.top = '-10%';
+                    el.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                    el.style.animationDuration = (Math.random() * 1 + 1) + 's'; // سرعة متغيرة
+                    playerContainer.appendChild(el);
+                    setTimeout(() => el.remove(), 2000);
+                }, i * 50);
+            }
         }
 
-        // عداد مشاهدات حي متذبذب
-        let viewers = Math.floor(Math.random() * (175000 - 135000 + 1)) + 135000;
-        setInterval(() => {
-            viewers += Math.floor(Math.random() * 70) - 32;
-            document.getElementById('viewers').innerText = viewers.toLocaleString('en-US');
+        // دالة تبديل الاهتزاز (تم إصلاح التراجع عنها)
+        function toggleVibration() {
+            isVibrationEnabled = !isVibrationEnabled;
+            localStorage.setItem('vibrationEnabled', isVibrationEnabled);
+            updateVibrationButton();
+            
+            if(isVibrationEnabled) {
+                showToast("⚡ تم تفعيل اهتزاز الكاميرا والإيموجيات");
+                triggerEmojiRain(); // احتفال بسيط بالتفعيل
+            } else {
+                showToast("🔕 تم إيقاف الاهتزاز. يمكنك إعادة تشغيله بالضغط مرة أخرى.");
+                // إيقاف كل الإيموجيات فوراً
+                document.querySelectorAll('.float-emoji, .rain-emoji').forEach(e => e.remove());
+            }
         }
-        , 2000);
 
-        // مراقبة سرعة البيانات الحية
-        setInterval(() => {
-            const speed = (Math.random() * (5.8 - 3.9) + 3.9).toFixed(1);
-            document.getElementById('liveBitrate').innerHTML = `<i class="fas fa-tachometer-alt"></i> ${speed} Mbps`;
-        }, 1500);
+        // تحديث شكل الزر بناءً على الحالة
+        function updateVibrationButton() {
+            const btn = document.getElementById('vibrationBtn');
+            if(isVibrationEnabled) {
+                btn.innerHTML = `<i class="fas fa-check-circle" style="color:#00e676;"></i> تفعيل الاهتزاز التلقائي ⚡`;
+            } else {
+                btn.innerHTML = `<i class="fas fa-times-circle" style="color:#ff0055;"></i> إيقاف الاهتزاز التلقائي 🔕`;
+            }
+        }
+
+        // ==========================================================
+        // إعادة ضبط المصنع (Reset Settings)
+        // ==========================================================
+        function resetSettings() {
+            // استعادة الحالة الافتراضية
+            isVibrationEnabled = true;
+            localStorage.setItem('vibrationEnabled', 'true');
+            updateVibrationButton();
+            document.documentElement.style.setProperty('--primary', '#9d4edd');
+            document.documentElement.style.setProperty('--primary-dark', '#5c1b75');
+            if(document.body.classList.contains('cinema-mode')) {
+                toggleCinemaMode();
+            }
+            if(playerContainer.classList.contains('flipped')) {
+                toggleFlipScreen();
+            }
+            triggerEmojiRain(); // مطر إيموجيات للاحتفال بإعادة الضبط
+            showToast("🔄 تم إعادة ضبط جميع الإعدادات إلى الوضع الافتراضي");
+        }
+
+        // ==========================================================
+        // توقع النتيجة مع احتفالية كونفيتي (Confetti Effect)
+        // ==========================================================
+        function submitPrediction() {
+            const teamA = document.getElementById('teamA').value;
+            const teamB = document.getElementById('teamB').value;
+            
+            if(teamA === "" || teamB === "") {
+                showToast("<i class='fas fa-exclamation-triangle'></i> يرجى إدخال نتيجة الفريقين!");
+                return;
+            }
+            
+            // حفلة المفرقعات الورقية الضخمة (تساقط متعدد للإيموجيات)
+            for(let i=0; i<5; i++) {
+                setTimeout(() => {
+                    triggerFloatEmoji('🎉');
+                    triggerFloatEmoji('🎊');
+                }, i * 150);
+            }
+            // المطر
+            triggerEmojiRain();
+            
+            showToast(`<i class='fas fa-star'></i> تم إرسال توقعك (${teamA} - ${teamB}) بنجاح! 🎉`);
+            document.getElementById('teamA').value = "";
+            document.getElementById('teamB').value = "";
+            // نبض لوني بسيط للمشغل
+            playerContainer.style.borderColor = 'gold';
+            setTimeout(() => playerContainer.style.borderColor = 'var(--primary)', 1000);
+        }
+
+        // ==========================================================
+        // تغيير الألوان (Theme System)
+        // ==========================================================
+        function changeTheme(primary, dark) {
+            document.documentElement.style.setProperty('--primary', primary);
+            document.documentElement.style.setProperty('--primary-dark', dark);
+            document.documentElement.style.setProperty('--glow-color', primary + '4D'); // توليد توهج شفاف
+            showToast("<i class='fas fa-palette'></i> تم تغيير ألوان التطبيق بنجاح 🎨");
+            triggerFloatEmoji('🎨');
+        }
+
+        // ==========================================================
+        // نظام الإشعارات (Toast Notification System)
+        // ==========================================================
+        function showToast(message) {
+            toast.innerHTML = message;
+            toast.classList.add('show');
+            // إلغاء المؤقت القديم إذا وجد لمنع التداخل
+            if(window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => { 
+                toast.classList.remove('show'); 
+            }, 4000);
+        }
     </script>
-
 </body>
 </html>
