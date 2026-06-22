@@ -11,7 +11,6 @@
     <style>
         /* ==========================================================
            المتغيرات الأساسية (الألوان والخلفيات)
-           جميع الألوان قابلة للتخصيص عبر الجافاسكربت
         ========================================================== */
         :root { 
             --primary: #9d4edd; 
@@ -29,7 +28,6 @@
             background: var(--bg); font-family: 'Cairo', sans-serif; 
             overflow: hidden; color: #fff; user-select: none;
             -webkit-user-select: none; transition: background 0.3s;
-            /* منع التمرير العرضي أثناء تفعيل الإيموجيات */
         }
 
         /* ==========================================================
@@ -190,6 +188,9 @@
             100% { box-shadow: 0 0 0 0 rgba(157, 78, 221, 0); }
         }
 
+        /* ==========================================================
+           تنسيقات الأقسام الأخرى
+        ========================================================== */
         .prediction-card { background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; text-align: center; }
         .score-inputs { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
         .score-inputs input { width: 60px; height: 60px; border-radius: 10px; border: 2px solid var(--glass-border); background: rgba(0,0,0,0.5); color: #fff; font-size: 24px; font-weight: bold; text-align: center; outline: none; font-family: 'Cairo'; transition: var(--transition-speed); }
@@ -204,10 +205,68 @@
         .c-blue { background: #1877f2; }
         .c-green { background: #00e676; }
 
+        /* ==========================================================
+           تنسيق صور التطبيق الجديدة (قسم حول)
+        ========================================================== */
         .about-box { background: rgba(255,255,255,0.02); border: 1px dashed var(--glass-border); padding: 15px; border-radius: 12px; font-size: 13px; line-height: 1.8; color: #a0a5b5; margin-bottom: 15px; }
+        
+        .app-gallery {
+            display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;
+        }
+        .media-card {
+            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 15px; 
+            padding: 15px; text-align: center; transition: var(--transition-speed);
+            backdrop-filter: blur(5px);
+        }
+        .media-card:active { transform: scale(0.98); }
+        .media-title { font-size: 13px; color: #a0a5b5; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .media-img-container {
+            position: relative; overflow: hidden; border-radius: 10px; 
+            background: #000; cursor: pointer; border: 1px solid var(--glass-border);
+        }
+        .media-img-container img {
+            width: 100%; height: auto; display: block; transition: transform 0.4s ease;
+        }
+        .media-img-container:active img { transform: scale(0.97); }
+        .media-img-container .overlay-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.6); width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: #fff; 
+            font-size: 18px; opacity: 0; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .media-img-container:hover .overlay-icon { opacity: 1; }
+
+        /* ==========================================================
+           مودال تكبير الصورة (Lightbox Modal)
+        ========================================================== */
+        .image-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 99999; display: flex;
+            justify-content: center; align-items: center; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease; padding: 20px; box-sizing: border-box; backdrop-filter: blur(10px);
+        }
+        .image-modal.active { opacity: 1; pointer-events: all; }
+        .image-modal img {
+            max-width: 100%; max-height: 90vh; border-radius: 12px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); transform: scale(0.8); transition: transform 0.3s ease;
+        }
+        .image-modal.active img { transform: scale(1); }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1);
+            border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%;
+            font-size: 24px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:active { transform: scale(0.85); background: var(--red); }
+
+        /* ==========================================================
+           زر فيسبوك
+        ========================================================== */
         .page-link-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #1877f2; color: #fff; text-decoration: none; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 14px; transition: var(--transition-speed); }
         .page-link-btn:active { transform: scale(0.98); }
         
+        /* ==========================================================
+           إشعارات توست (Toast)
+        ========================================================== */
         .toast-notification { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 12px; font-weight: 700; z-index: 10000; transition: bottom 0.4s; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
         .toast-notification.show { bottom: 20px; }
 
@@ -245,6 +304,12 @@
 
     <!-- الإشعارات المنبثقة -->
     <div class="toast-notification" id="toastMsg"></div>
+
+    <!-- نافذة تكبير الصور (Lightbox) -->
+    <div class="image-modal" id="imageModal" onclick="closeLightbox(event)">
+        <button class="modal-close" onclick="closeLightboxDirect()"><i class="fas fa-times"></i></button>
+        <img id="modalImage" src="" alt="صورة مكبرة">
+    </div>
 
     <!-- شاشة الدخول المسبق -->
     <div class="welcome-screen" id="splashScreen">
@@ -358,9 +423,33 @@
                 <p style="color: #63687a; font-size: 10px; margin-top: 5px;">(سيتم إعادة كل شيء إلى حالته الافتراضية)</p>
             </div>
 
-            <!-- 4. تبويب حول -->
+            <!-- 4. تبويب حول (تم إضافة الصور هنا) -->
             <div id="aboutTab" class="tab-content">
-                <div class="panel-title"><i class="fas fa-book-open"></i> شرح التطبيق والتواصل</div>
+                <div class="panel-title"><i class="fas fa-images"></i> معرض الصور والاتصال</div>
+                
+                <!-- قسم صور التطبيق -->
+                <div class="app-gallery">
+                    <!-- الصورة 1: صورة التطبيق -->
+                    <div class="media-card">
+                        <div class="media-title"><i class="fas fa-mobile-alt" style="color:var(--primary);"></i> صورة التطبيق الرسمية</div>
+                        <div class="media-img-container" onclick="openLightbox('https://i.ibb.co/tw8MnntG/1781796913818.jpg')">
+                            <img src="https://i.ibb.co/tw8MnntG/1781796913818.jpg" alt="صورة التطبيق" loading="lazy">
+                            <div class="overlay-icon"><i class="fas fa-search-plus"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- الصورة 2: كود QR للفيسبوك -->
+                    <div class="media-card">
+                        <div class="media-title"><i class="fab fa-facebook" style="color:#1877f2;"></i> كود QR لصفحة فيسبوك</div>
+                        <div class="media-img-container" onclick="openLightbox('https://i.ibb.co/xKFxvs8V/Messenger-creation-A9-AC79-EE-60-AD-4-F90-A22-E-EC62875288-FC.jpg')">
+                            <img src="https://i.ibb.co/xKFxvs8V/Messenger-creation-A9-AC79-EE-60-AD-4-F90-A22-E-EC62875288-FC.jpg" alt="QR Code فيسبوك" loading="lazy">
+                            <div class="overlay-icon"><i class="fas fa-qrcode"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- نص شرح التطبيق -->
+                <div class="panel-title" style="border-top: 1px solid var(--glass-border); padding-top: 10px;"><i class="fas fa-book-open"></i> حول التطبيق</div>
                 <div class="about-box">
                     <strong>تطبيق BeIN الغلابة:</strong><br>
                     هو منصتك الأولى لمشاهدة أقوى المباريات والبطولات العالمية مجاناً وبجودات متعددة تناسب جميع سرعات الإنترنت. 
@@ -368,7 +457,8 @@
                     <br><br>
                     <i class="fas fa-heart" style="color:var(--red);"></i> معكم في كل مباراة.
                 </div>
-                <!-- تم تعديل الرابط إلى صفحتك مباشرة -->
+
+                <!-- زر زيارة الفيسبوك -->
                 <a href="https://www.facebook.com/profile.php?id=61591181091649" target="_blank" class="page-link-btn" onclick="showToast('جاري تحويلك إلى صفحة الفيسبوك...')">
                     <i class="fab fa-facebook-f"></i> زيارة صفحة BeIN الغلابة
                 </a>
@@ -471,33 +561,24 @@
         }
 
         // ==========================================================
-        // ==== نظام التفاعلات المتقدمة (الميزات الجديدة كلها هنا) ====
+        // ==== نظام التفاعلات المتقدمة ====
         // ==========================================================
-
-        // 1. تأثير الاهتزاز البصري (Shake Animation)
-        // 2. الإيموجيات الطائرة (Floating Emojis)
-        // 3. تأثير فلاش الكاميرا (Flash)
-        // 4. تسلسل الاهتزازات الحقيقية (Haptic Sequence)
-        // 5. إمطار الإيموجيات (Emoji Rain) عند النقر السريع
         function triggerShake() {
             if(!isVibrationEnabled) return;
             
             // أ. التأثير البصري (اهتزاز الشاشة)
             playerContainer.classList.remove('shake-active');
-            void playerContainer.offsetWidth; // إعادة تشغيل الأنيميشن
+            void playerContainer.offsetWidth;
             playerContainer.classList.add('shake-active');
             
             // ب. تأثير الفلاش الوهمي (لمبة الكاميرا)
             playerContainer.classList.remove('flash-active');
             void playerContainer.offsetWidth;
             playerContainer.classList.add('flash-active');
-            // إزالة الكلاس بعد انتهاء الأنيميشن
             setTimeout(() => playerContainer.classList.remove('flash-active'), 300);
 
             // ج. الاهتزاز الحقيقي للهاتف (تسلسل حماسي)
             if (navigator.vibrate) {
-                // نمط اهتزاز يحاكي هتاف الجماهير: نبض - توقف - نبض
-                // [المدة بالمللي ثانية، توقف، مدة]
                 navigator.vibrate([50, 30, 100, 50, 150]);
             }
             
@@ -505,10 +586,6 @@
             const emojis = ['⚽', '🔥', '🎉', '💥', '👏', '❤️', '😍', '🇩🇿'];
             const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
             triggerFloatEmoji(randomEmoji);
-            
-            // هـ. تفعيل إمطار الإيموجيات (نظام الحماس)
-            // إذا تم النقر بسرعة، سيتم استدعاء هذا لإضافة المزيد
-            // مستخدم خارجي سيستمتع بهذا إذا كان الزر يعمل
         }
 
         // وظيفة الإيموجي الطائر الواحد
@@ -517,21 +594,20 @@
             const el = document.createElement('div');
             el.className = 'float-emoji';
             el.innerText = emoji;
-            // تحديد مكان عشوائي بالعرض (لتعطي شكل جميل وطبيعي)
             const randomX = Math.floor(Math.random() * 80) + 10;
             const randomY = Math.floor(Math.random() * 30) + 10;
             el.style.left = randomX + '%';
             el.style.top = randomY + '%';
-            el.style.fontSize = (Math.random() * 30 + 30) + 'px'; // حجم متفاوت
+            el.style.fontSize = (Math.random() * 30 + 30) + 'px';
             playerContainer.appendChild(el);
-            setTimeout(() => el.remove(), 1300); // حذف العنصر بعد انتهاء الأنيميشن
+            setTimeout(() => el.remove(), 1300);
         }
 
-        // وظيفة إمطار الإيموجيات (Emoji Rain) للمتعة القصوى
+        // وظيفة إمطار الإيموجيات (Emoji Rain)
         function triggerEmojiRain() {
             if(!isVibrationEnabled) return;
             const rainEmojis = ['⚽', '🔥', '🎉', '🌟'];
-            for(let i = 0; i < 12; i++) { // إسقاط 12 إيموجي في وقت واحد
+            for(let i = 0; i < 12; i++) {
                 setTimeout(() => {
                     const el = document.createElement('div');
                     el.className = 'rain-emoji';
@@ -539,14 +615,14 @@
                     el.style.left = Math.random() * 100 + '%';
                     el.style.top = '-10%';
                     el.style.fontSize = (Math.random() * 20 + 20) + 'px';
-                    el.style.animationDuration = (Math.random() * 1 + 1) + 's'; // سرعة متغيرة
+                    el.style.animationDuration = (Math.random() * 1 + 1) + 's';
                     playerContainer.appendChild(el);
                     setTimeout(() => el.remove(), 2000);
                 }, i * 50);
             }
         }
 
-        // دالة تبديل الاهتزاز (تم إصلاح التراجع عنها)
+        // دالة تبديل الاهتزاز (مع التراجع)
         function toggleVibration() {
             isVibrationEnabled = !isVibrationEnabled;
             localStorage.setItem('vibrationEnabled', isVibrationEnabled);
@@ -554,10 +630,9 @@
             
             if(isVibrationEnabled) {
                 showToast("⚡ تم تفعيل اهتزاز الكاميرا والإيموجيات");
-                triggerEmojiRain(); // احتفال بسيط بالتفعيل
+                triggerEmojiRain();
             } else {
                 showToast("🔕 تم إيقاف الاهتزاز. يمكنك إعادة تشغيله بالضغط مرة أخرى.");
-                // إيقاف كل الإيموجيات فوراً
                 document.querySelectorAll('.float-emoji, .rain-emoji').forEach(e => e.remove());
             }
         }
@@ -576,7 +651,6 @@
         // إعادة ضبط المصنع (Reset Settings)
         // ==========================================================
         function resetSettings() {
-            // استعادة الحالة الافتراضية
             isVibrationEnabled = true;
             localStorage.setItem('vibrationEnabled', 'true');
             updateVibrationButton();
@@ -588,12 +662,12 @@
             if(playerContainer.classList.contains('flipped')) {
                 toggleFlipScreen();
             }
-            triggerEmojiRain(); // مطر إيموجيات للاحتفال بإعادة الضبط
+            triggerEmojiRain();
             showToast("🔄 تم إعادة ضبط جميع الإعدادات إلى الوضع الافتراضي");
         }
 
         // ==========================================================
-        // توقع النتيجة مع احتفالية كونفيتي (Confetti Effect)
+        // توقع النتيجة مع احتفالية كونفيتي
         // ==========================================================
         function submitPrediction() {
             const teamA = document.getElementById('teamA').value;
@@ -604,20 +678,17 @@
                 return;
             }
             
-            // حفلة المفرقعات الورقية الضخمة (تساقط متعدد للإيموجيات)
             for(let i=0; i<5; i++) {
                 setTimeout(() => {
                     triggerFloatEmoji('🎉');
                     triggerFloatEmoji('🎊');
                 }, i * 150);
             }
-            // المطر
             triggerEmojiRain();
             
             showToast(`<i class='fas fa-star'></i> تم إرسال توقعك (${teamA} - ${teamB}) بنجاح! 🎉`);
             document.getElementById('teamA').value = "";
             document.getElementById('teamB').value = "";
-            // نبض لوني بسيط للمشغل
             playerContainer.style.borderColor = 'gold';
             setTimeout(() => playerContainer.style.borderColor = 'var(--primary)', 1000);
         }
@@ -628,7 +699,7 @@
         function changeTheme(primary, dark) {
             document.documentElement.style.setProperty('--primary', primary);
             document.documentElement.style.setProperty('--primary-dark', dark);
-            document.documentElement.style.setProperty('--glow-color', primary + '4D'); // توليد توهج شفاف
+            document.documentElement.style.setProperty('--glow-color', primary + '4D');
             showToast("<i class='fas fa-palette'></i> تم تغيير ألوان التطبيق بنجاح 🎨");
             triggerFloatEmoji('🎨');
         }
@@ -639,11 +710,38 @@
         function showToast(message) {
             toast.innerHTML = message;
             toast.classList.add('show');
-            // إلغاء المؤقت القديم إذا وجد لمنع التداخل
             if(window.toastTimeout) clearTimeout(window.toastTimeout);
             window.toastTimeout = setTimeout(() => { 
                 toast.classList.remove('show'); 
             }, 4000);
+        }
+
+        // ==========================================================
+        // نظام تكبير الصور (Lightbox System) - تم إضافته للصور
+        // ==========================================================
+        function openLightbox(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = src;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // منع التمرير الخلفي
+            // تفعيل تأثير حماسي عند فتح الصور
+            if(isVibrationEnabled && navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+        }
+
+        function closeLightbox(event) {
+            // إغلاق فقط إذا تم الضغط على الخلفية (وليس الصورة نفسها)
+            if (event.target !== document.getElementById('modalImage')) {
+                document.getElementById('imageModal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function closeLightboxDirect() {
+            document.getElementById('imageModal').classList.remove('active');
+            document.body.style.overflow = '';
         }
     </script>
 </body>
